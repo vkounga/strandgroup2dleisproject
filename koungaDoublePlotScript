@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 15 15:57:06 2020
+
+@author: vaneckkounga
+"""
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from numpy import linspace
+import scipy
+from scipy import interpolate
+from matplotlib import cm
+import re
+import datetime as dt
+
+# This is the path for the experimental data
+exp_path = '/Users/vaneckkounga/Google Drive/Lehigh Year 5/Research/Kounga Data/MoOx ESC Investigation /MoOx TOF Exp Data/MoOx-1, 3 keV, TOF on_corrected (500-3000).txt' # CSV file
+sim_path = '/Users/vaneckkounga/Google Drive/Lehigh Year 5/Research/Kounga Data/MoOx ESC Investigation /MoOx Simulations/0.5/ESC=0.5_simulation_2 (500-3000).xlsx' # Excel file
+
+# This creates a dataframe from the experimental data
+e = pd.read_csv( exp_path, 
+                 error_bad_lines = False, 
+                 delimiter='	')
+s = pd.read_excel( sim_path,
+                   skiprows = 30)
+
+
+#Creates an array from 0 to the maximum energy that is used
+e_energy = np.linspace(0, 3000, num = 1250) #Also change 'num' if you need to make this match the index of the reionzation values
+
+# The following few lines begins the interpolation of the simulation dataframe
+tck = interpolate.splrep(s['Energy'], s['any penetration range'], s=0)
+
+# The minimum and maximum energy value in the actual simulation file. 
+# Change this value after you look at the outputs
+s_min_energy = 0 
+s_max_energy = 3965
+s_xnew = np.arange(s_min_energy, s_max_energy, (s_max_energy/1250))
+s_ynew = interpolate.splev(s_xnew, tck, der=0)
+
+# Creates a arange or like imaginary list of numbers. Used for x-axis ticks 
+x_min_tick = 0 # You can change this based on what you want the x-axis to begin at
+x_max_tick = 4000 # Make this a number you won't see on the graph b/c the graph will show one step below it
+xticks = np.arange(x_min_tick, x_max_tick, 1000) # Imaginary list of numbers from min to max tick and registers every x/steps
+xticklabels = [0, 1000, 2000, 3000] # Creates a label named 0, 1000, 2000, etc. Thic can be changed
+
+# Makes the experimental net spectrum (no peaks) into an array
+e_array = e['total (net)'].to_numpy()
+abs_e_array = abs(e_array) # Takes the absolute value of the array 
+e_net_norm = abs_e_array / 10 # Normalizes the experimental net (no peak) output
+e_gross_norm = e['total (gross)'].to_numpy() / 10 # Normalizes the experimental gross (w/ peak) output
+
+# Makes the simulation spectrum into an array 
+s_array = s['any penetration range'].to_numpy()
+
+s_norm = s_array / 1000 #Normalizes the simulation values 
+'''
+# Reionization function
+rf_vals = abs_e_array/s_ynew 
+abs_rf_vals = abs(rf_vals)
+rf_df = pd.DataFrame({'Energy': e_energy, 'Reionization Function': abs_rf_vals})
+rf_df.to_excel("esc=0.6_Reionization Function Values MoOx-1 5keV (1200-5000).xlsx")
+'''
+# The path for the reionization function
+rf_path = '/Users/vaneckkounga/Google Drive/Lehigh Year 5/Research/Kounga Data/MoOx ESC Investigation /Reionization Function Values/0.5/esc=0.5_Reionization Function Values MoOx-1 3keV (500-3000).xlsx'
+
+# Makes the reionization function 
+rf = pd.read_excel(rf_path) # Reuploads the reionization function dataframe
+red_rf = rf.iloc[375:980] # Reduces the dataframe to particular indexes
+red_rf_array = red_rf['Reionization Function'].to_numpy() # Makes the intensity of the reionixation values into an array
+red_rf_norm = red_rf_array * 100 #Change the scaler to normalize it
+
+
+#Graphs the data
+plt.plot(e_energy, e_gross_norm, label = 'Experimental Spectrum with Peaks', marker = 's', markevery = 20, markersize = 4, color  = '#0D98BA')
+plt.plot(e_energy, e_net_norm, label = 'Experimental Spectrum without Peaks', marker = '^', markevery = 60, markersize = 5, color = '#FD4300')
+plt.plot(s['Energy'], s_norm, label = 'Simulated Spectrum', marker = '.', markevery = 10, markersize = 10, color = '#CC79A7')
+plt.plot(red_rf['Energy'], red_rf_norm, label = 'Reionization Function', markevery = 10, color = 'orange')
+
+
+
+# Makes the tick marks for the xaxis. (Where to place the tick, what to call it)
+plt.xticks(xticks, xticklabels)
+
+# Shows it all
+plt.legend(loc = 'best')
+plt.xlabel('Energy (eV)')
+plt.ylabel('Intensity (normalized arbitrary/sec.)')
+plt.title('Intensity vs. Energy of MoOx-1 Thin Film @ 3keV w/ ESC = 0.5')
+#plt.margins(0) # By defualt matplotlib adds a 5% margin to the axes and this gets rid of it, the number inside is interchangeable 
+
+# Does the same things as the plt.margins above, but I think this specifies to just x- & y- axis
+# plt.rcParams['axes.xmargin'] = 0
+plt.rcParams['axes.ymargin'] = 0
+plt.rcParams["figure.figsize"] = [10,10] # Changes the figure size
+
+plt.show() 
+

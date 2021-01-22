@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct 27 17:29:13 2020
+
+@author: vaneckkounga
+"""
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from numpy import linspace
+import scipy
+from scipy import interpolate
+from matplotlib import cm
+import re
+import datetime as dt
+
+
+# This is the path for the experimental data
+exp_path = '/Users/vaneckkounga/Desktop/HS LEIS 60cyc MoTe from Yale/Raw Data/Yale60Spot1_0.txt' # CSV file
+
+# This creates a dataframe from the experimental data
+e = pd.read_csv( exp_path, 
+                 error_bad_lines = False, 
+                 delimiter='	')
+
+#Creates an array from 0 to the maximum energy that is used
+e_energy = np.linspace(600, 2998, num = 1200) #Also change 'num' if you need to make this match the index of the reionzation values
+
+# Creates a arange or like imaginary list of numbers. Used for x-axis ticks 
+x_min_tick = 0 # You can change this based on what you want the x-axis to begin at
+x_max_tick = 3500 # Make this a number you won't see on the graph b/c the graph will show one step below it
+xticks = np.arange(x_min_tick, x_max_tick, 500) # Imaginary list of numbers from min to max tick and registers every x/steps
+xticklabels = [0, 500, 1000, 1500, 2000, 2500, 3000] # Creates a label named 0, 1000, 2000, etc. Thic can be changed
+
+
+# Makes the tick marks for the xaxis. (Where to place the tick, what to call it)
+plt.xticks(xticks, xticklabels)
+
+colors = cm.magma(np.linspace(0.3, 0.8, 36)) #This creats the gradient and the different invervals/lines to space it out
+
+# Plotter
+# plt.plot(e_energy, e['total (gross)'], label = 'Total Sputter')
+
+e.plot('energy [eV]', y=['0 (net)', '1 (net)', '2 (net)', '3 (net)', '4 (net)', '5 (net)',
+                         '6 (net)', '7 (net)', '8 (net)', '9 (net)', '10 (net)', '11 (net)',
+                         '12 (net)', '13 (net)', '14 (net)', '15 (net)', '16 (net)', '17 (net)',
+                         '18 (net)', '19 (net)', '20 (net)', '21 (net)', '22 (net)', '23 (net)',
+                         '24 (net)', '25 (net)', '26 (net)', '27 (net)', '28 (net)', '29 (net)',
+                         '30 (net)', '31 (net)', '32 (net)', '33 (net)', '34 (net)', '25 (net)',
+                         ], color=colors)
+
+
+# Different plot attributes
+plt.legend(['Surface Scan', 'Sputter 1', 'Sputter 2', 'Sputter 3', 'Sputter 4', 'Sputter 5',
+            'Sputter 6', 'Sputter 7', 'Sputter 8', 'Sputter 9', 'Sputter 10', 'Sputter 11',
+            'Sputter 12', 'Sputter 13', 'Sputter 14', 'Sputter 15', 'Sputter 16', 'Sputter 17',
+            'Sputter 18', 'Sputter 19', 'Sputter 20', 'Sputter 21', 'Sputter 22', 'Sputter 23',
+            'Sputter 24', 'Sputter 25', 'Sputter 26', 'Sputter 27', 'Sputter 28', 'Sputter 29',
+            'Sputter 30', 'Sputter 31', 'Sputter 32', 'Sputter 33', 'Sputter 34', 'Sputter 35',
+            ], 
+           bbox_to_anchor=(1.2, 1), #This is what makes the legent outside of the plot
+           loc='best',
+           fontsize = 30
+          ) # Legend location 
+
+plt.xlabel('Energy (eV)', fontsize = 30) # x-axis font size and label
+plt.ylabel('Intensity (Counts)', fontsize = 30) # y-axis font size and label
+plt.tick_params(direction = 'in', which = 'both') #direction of the ticks
+
+plt.tick_params(axis="x", labelsize=25, size = 15) #tick paramaters including tick label size and size of tick
+plt.tick_params(axis="y", labelsize=25, size = 15) #tick paramaters including tick label size and size of tick
+plt.rcParams['axes.xmargin'] = 0 # make sure that the graph starts at the data
+#plt.rcParams['axes.ymargin'] = 0 # make sure that the graph starts at the data
+plt.rcParams["figure.figsize"] = [30,30] # Changes the figure size
+
+plt.show() #Shows it all
+
